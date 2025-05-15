@@ -17,6 +17,8 @@ import androidx.credentials.ClearCredentialStateRequest;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
 import androidx.credentials.exceptions.ClearCredentialException;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
@@ -27,6 +29,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 
@@ -35,24 +39,8 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
     private FirebaseAuth mAuth;
     private CredentialManager credentialManager;
     private TextView welcome_text;
-
-    FirebaseDatabase firebaseDatabase;
+    private ContactAdapter mAdapter;
     DatabaseReference databaseReference;
-
-    @Override
-    public void onEdit(Contact contact) {
-        Intent form = new Intent(this, FormActivity.class);
-        form.putExtra("id", contact.getId());
-        form.putExtra("name", contact.getName());
-        form.putExtra("phone", contact.getPhone());
-        form.putExtra("email", contact.getEmail());
-        startActivity(form);
-    }
-
-    @Override
-    public void onDelete(Contact contact) {
-
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +53,11 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
             return insets;
         });
         Objects.requireNonNull(getSupportActionBar()).hide();
+
+        mAdapter = new ContactAdapter(this, new ArrayList<>(), this);
+        RecyclerView rView = findViewById(R.id.RecyclerView);
+        rView.setAdapter(mAdapter);
+        rView.setLayoutManager(new LinearLayoutManager(this));
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
@@ -84,6 +77,24 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
 
     }
 
+    @Override
+    public void onEdit(Contact contact) {
+        Intent form = new Intent(this, FormActivity.class);
+        form.putExtra("id", contact.getId());
+        form.putExtra("name", contact.getName());
+        form.putExtra("phone", contact.getPhone());
+        form.putExtra("email", contact.getEmail());
+        startActivity(form);
+    }
+
+    @Override
+    public void onDelete(Contact contact) {
+        databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(String.valueOf(contact.getId())).removeValue()
+                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Contact deleted", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
+        refresh();
+    }
+
     @SuppressLint("SetTextI18n")
     @Override
     protected void onStart() {
@@ -92,6 +103,7 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
         if (currentUser != null) {
             welcome_text.setText("Welcome, " + currentUser.getEmail());
         }
+        refresh();
     }
 
     private void signOut() {
@@ -134,7 +146,14 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String value = dataSnapshot.getValue(String.class);
+                List<Contact> contacts = new ArrayList<>();
+                for (DataSnapshot snapshot : dataSnapshot.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).getChildren()) {
+                    Contact contact = snapshot.getValue(Contact.class);
+                                        if (contact != null) {
+                        contacts.add(contact);
+                    }
+                }
+                mAdapter.updateContacts(contacts);
             }
 
             @Override

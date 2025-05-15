@@ -80,7 +80,6 @@ public class FormActivity extends AppCompatActivity {
                         Toast.makeText(FormActivity.this, "Kontak gagal tersimpan", Toast.LENGTH_SHORT).show();
                     }
                 });
-                Toast.makeText(this, "Kontak berhasil diperbarui", Toast.LENGTH_SHORT).show();
             } else {
                 Contact contact = new Contact(name, email, phone);
                 databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(String.valueOf(contactId)).setValue(contact).addOnSuccessListener(this, new OnSuccessListener<Void>() {
