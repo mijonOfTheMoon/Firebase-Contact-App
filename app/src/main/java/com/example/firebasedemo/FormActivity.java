@@ -1,14 +1,31 @@
 package com.example.firebasedemo;
 
 import android.os.Bundle;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.Objects;
+
 public class FormActivity extends AppCompatActivity {
+    private EditText nameField;
+    private EditText emailField;
+    private EditText phoneField;
+    private DatabaseReference databaseReference;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,5 +37,67 @@ public class FormActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Objects.requireNonNull(getSupportActionBar()).hide();
+
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://fir-demo-3ba13-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        databaseReference = firebaseDatabase.getReference();
+        mAuth = FirebaseAuth.getInstance();
+
+        nameField = findViewById(R.id.nameField);
+        phoneField = findViewById(R.id.phoneField);
+        emailField = findViewById(R.id.emailField);
+        Button confirmButton = findViewById(R.id.confirmButton);
+        Button cancelButton = findViewById(R.id.batalButton);
+
+        String nama = getIntent().getStringExtra("name");
+        String surel = getIntent().getStringExtra("email");
+        String nomor = getIntent().getStringExtra("phone");
+        final int contactId = getIntent().getIntExtra("id", 0);
+
+        if (nama != null) nameField.setText(nama);
+        if (surel != null) emailField.setText(surel);
+        if (nomor != null) phoneField.setText(nomor);
+
+        confirmButton.setOnClickListener(v -> {
+            String name = nameField.getText().toString().trim();
+            String phone = phoneField.getText().toString().trim();
+            String email = emailField.getText().toString().trim();
+            if (name.isEmpty() || phone.isEmpty() || email.isEmpty()) {
+                Toast.makeText(this, "Semua field harus diisi", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (contactId == 0) {
+                Contact contact = new Contact(name, email, phone);
+                databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).push().setValue(contact).addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Toast.makeText(FormActivity.this, "Kontak baru berhasil tersimpan", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(FormActivity.this, "Kontak gagal tersimpan", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                Toast.makeText(this, "Kontak berhasil diperbarui", Toast.LENGTH_SHORT).show();
+            } else {
+                Contact contact = new Contact(name, email, phone);
+                databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(String.valueOf(contactId)).setValue(contact).addOnSuccessListener(this, new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void unused) {
+                        Toast.makeText(FormActivity.this, "Kontak berhasil diperbarui", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnFailureListener(this, new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(FormActivity.this, "Kontak gagal diperbarui", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+            finish();
+        });
+
+        cancelButton.setOnClickListener(v -> finish());
     }
 }

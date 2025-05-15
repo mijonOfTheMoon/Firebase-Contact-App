@@ -1,44 +1,46 @@
 package com.example.firebasedemo;
 
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.ViewGroup;
-import android.widget.Toast;
 
 import java.util.List;
 
-public class ContactAdapter extends RecyclerView.Adapter {
-    List<Contact> contacts;
-    Context ctx;
-    LayoutInflater inflater;
+public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactVH> {
+    private final List<Contact> contacts;
+    private final LayoutInflater inflater;
+    private final OnContactActionListener listener;
 
-    ContactAdapter(Context ctx, List<Contact> contacts) {
-        this.ctx = ctx;
+    public interface OnContactActionListener {
+        void onEdit(Contact contact);
+        void onDelete(Contact contact);
+    }
+
+    public ContactAdapter(Context ctx, List<Contact> contacts, OnContactActionListener listener) {
         this.contacts = contacts;
         this.inflater = LayoutInflater.from(ctx);
+        this.listener = listener;
     }
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ContactVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = inflater.inflate(R.layout.item_contact, parent, false);
-        return new ContactVH(itemView);
+        return new ContactVH(itemView, parent.getContext());
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-
+    public void onBindViewHolder(@NonNull ContactVH holder, int position) {
         Contact c = contacts.get(position);
-
-        ContactVH vh = (ContactVH) holder;
-        vh.nameTextView.setText(c.name);
-        vh.emailTextView.setText(c.email);
-        vh.phoneTextView.setText(c.phone);
+        holder.bind(c);
     }
 
     @Override
@@ -46,24 +48,47 @@ public class ContactAdapter extends RecyclerView.Adapter {
         return contacts.size();
     }
 
-    class ContactVH extends RecyclerView.ViewHolder implements View.OnClickListener {
-        private final TextView nameTextView;
-        private final TextView emailTextView;
-        private final TextView phoneTextView;
-
-        ContactVH(View iView) {
-            super(iView);
-            nameTextView = (TextView) iView.findViewById(R.id.item_name);
-            emailTextView = (TextView) iView.findViewById(R.id.item_email);
-            phoneTextView = (TextView) iView.findViewById(R.id.item_phone);
-            itemView.setOnClickListener(this);
-        }
-
-        @Override
-        public void onClick(View v) {
-            int pos = this.getAdapterPosition();
-            Toast.makeText(ctx, contacts.get(pos).name, Toast.LENGTH_SHORT).show();
-        }
+    @SuppressLint("NotifyDataSetChanged")
+    public void updateContacts(List<Contact> newContacts) {
+        contacts.clear();
+        contacts.addAll(newContacts);
+        notifyDataSetChanged();
     }
 
+    class ContactVH extends RecyclerView.ViewHolder {
+        final TextView nameTextView;
+        final TextView emailTextView;
+        final TextView phoneTextView;
+        final Button editButton;
+        final Button deleteButton;
+
+        ContactVH(@NonNull View itemView, Context context) {
+            super(itemView);
+            nameTextView  = itemView.findViewById(R.id.item_name);
+            emailTextView = itemView.findViewById(R.id.item_email);
+            phoneTextView = itemView.findViewById(R.id.item_phone);
+            editButton    = itemView.findViewById(R.id.editButton);
+            deleteButton  = itemView.findViewById(R.id.deleteButton);
+
+            editButton.setOnClickListener(v -> {
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) listener.onEdit(contacts.get(pos));
+            });
+            deleteButton.setOnClickListener(v -> new AlertDialog.Builder(context)
+                    .setTitle("Konfirmasi")
+                    .setMessage("Apakah kamu yakin ingin menghapus kontak ini?")
+                    .setPositiveButton("Ya", (dialog, which) -> {
+                        int pos = getAdapterPosition();
+                        if (pos != RecyclerView.NO_POSITION) listener.onDelete(contacts.get(pos));
+                    })
+                    .setNegativeButton("Tidak", null)
+                    .show());
+        }
+
+        void bind(Contact c) {
+            nameTextView.setText(c.getName());
+            emailTextView.setText(c.getEmail());
+            phoneTextView.setText(c.getPhone());
+        }
+    }
 }

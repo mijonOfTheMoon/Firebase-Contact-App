@@ -5,6 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/mainbg"
     tools:context=".FormActivity">
 
     <EditText
@@ -74,7 +75,7 @@
         android:id="@+id/confirmButton"
         android:layout_width="140dp"
         android:layout_height="52dp"
-        android:backgroundTint="#D77540"
+        android:backgroundTint="@color/secolor"
         android:text="@string/konfirmasi"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -87,7 +88,7 @@
         android:id="@+id/batalButton"
         android:layout_width="140dp"
         android:layout_height="52dp"
-        android:backgroundTint="#AB8A78"
+        android:backgroundTint="#C3A292"
         android:text="@string/batal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

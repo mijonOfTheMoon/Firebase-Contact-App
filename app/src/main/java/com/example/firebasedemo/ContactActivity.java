@@ -21,15 +21,38 @@ import androidx.credentials.exceptions.ClearCredentialException;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.Objects;
 import java.util.concurrent.Executors;
 
-public class ContactActivity extends AppCompatActivity {
+public class ContactActivity extends AppCompatActivity implements ContactAdapter.OnContactActionListener {
 
     private FirebaseAuth mAuth;
     private CredentialManager credentialManager;
     private TextView welcome_text;
+
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
+
+    @Override
+    public void onEdit(Contact contact) {
+        Intent form = new Intent(this, FormActivity.class);
+        form.putExtra("id", contact.getId());
+        form.putExtra("name", contact.getName());
+        form.putExtra("phone", contact.getPhone());
+        form.putExtra("email", contact.getEmail());
+        startActivity(form);
+    }
+
+    @Override
+    public void onDelete(Contact contact) {
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +66,14 @@ public class ContactActivity extends AppCompatActivity {
         });
         Objects.requireNonNull(getSupportActionBar()).hide();
 
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(v -> {
+            Intent intent = new Intent(this, FormActivity.class);
+            startActivity(intent);
+        });
+
+        FirebaseDatabase firebaseDatabase = FirebaseDatabase.getInstance("https://fir-demo-3ba13-default-rtdb.asia-southeast1.firebasedatabase.app/");
+        databaseReference = firebaseDatabase.getReference();
         mAuth = FirebaseAuth.getInstance();
         credentialManager = CredentialManager.create(getBaseContext());
 
@@ -95,6 +126,20 @@ public class ContactActivity extends AppCompatActivity {
                     }
                 } catch (Exception ignored) {
                 }
+            }
+        });
+    }
+
+    private void refresh() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String value = dataSnapshot.getValue(String.class);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(ContactActivity.this, "Failed to read contacts.", Toast.LENGTH_SHORT).show();
             }
         });
     }
