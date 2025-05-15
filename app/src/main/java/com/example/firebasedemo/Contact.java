@@ -7,13 +7,13 @@ public class Contact {
     @Exclude
     private String id;
     private String name;
-    private String phone;
     private String email;
+    private String phone;
     
     public Contact() {
     }
 
-    public Contact(String name, String phone, String email) {
+    public Contact(String name, String email, String phone) {
         this.name = name;
         this.phone = phone;
         this.email = email;
