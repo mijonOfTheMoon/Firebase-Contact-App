@@ -39,6 +39,7 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.OAuthProvider;
 
 import java.util.List;
 import java.util.Objects;
@@ -68,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
         password = findViewById(R.id.passwordfield);
         Button login = findViewById(R.id.loginbutton);
         ImageView google = findViewById(R.id.google);
+        ImageView twitter = findViewById(R.id.twitter);
 
         mAuth = FirebaseAuth.getInstance();
         credentialManager = CredentialManager.create(getBaseContext());
@@ -105,6 +107,12 @@ public class LoginActivity extends AppCompatActivity {
 
         ImageView facebook = findViewById(R.id.facebook);
         facebook.setOnClickListener(v -> LoginManager.getInstance().logInWithReadPermissions(this, List.of("email", "public_profile")));
+
+        OAuthProvider.Builder provider = OAuthProvider.newBuilder("twitter.com");
+
+        twitter.setOnClickListener(v -> {
+            signInWithTwitter(provider);
+        });
     }
 
     @Override
@@ -143,6 +151,13 @@ public class LoginActivity extends AppCompatActivity {
         } else {
             Toast.makeText(LoginActivity.this, "Credential is not of type Google ID!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private void signInWithTwitter(OAuthProvider.Builder provider) {
+        mAuth.startActivityForSignInWithProvider(this, provider.build()).addOnSuccessListener(this, authResult -> {
+            FirebaseUser user = authResult.getUser();
+            updateUI(user);
+        }).addOnFailureListener(this, e -> updateUI(null));
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
