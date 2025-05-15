@@ -98,7 +98,7 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
-            welcome_text.setText("Welcome, " + currentUser.getEmail());
+            welcome_text.setText("Welcome,\n" + currentUser.getEmail());
         }
         refresh();
     }

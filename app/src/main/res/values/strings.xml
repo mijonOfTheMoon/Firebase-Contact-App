@@ -33,4 +33,8 @@
     <string name="nomor_telepon">Nomor Telepon</string>
     <string name="nama">Nama</string>
     <string name="log_out">Log out</string>
+
+    <string name="facebook_app_id">1698519134103251</string>
+    <string name="fb_login_protocol_scheme">fb1698519134103251</string>
+    <string name="facebook_client_token">62eaac4f6191f3d400dcbf4ef2f178c1</string>
 </resources>

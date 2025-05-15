@@ -1,10 +1,12 @@
 package com.example.firebasedemo;
 
+import static android.content.ContentValues.TAG;
 import static com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CancellationSignal;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -16,23 +18,29 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.credentials.ClearCredentialStateRequest;
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
 import androidx.credentials.CustomCredential;
 import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
-import androidx.credentials.exceptions.ClearCredentialException;
 import androidx.credentials.exceptions.GetCredentialException;
 
+import com.facebook.AccessToken;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 
@@ -40,6 +48,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private CredentialManager credentialManager;
+    private CallbackManager callbackManager;
 
     private EditText email;
     private EditText password;
@@ -75,6 +84,27 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         google.setOnClickListener(v -> launchCredentialManager());
+
+        callbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                handleFacebookAccessToken(loginResult.getAccessToken());
+            }
+
+            @Override
+            public void onCancel() {
+                updateUI(null);
+            }
+
+            @Override
+            public void onError(@NonNull FacebookException error) {
+                updateUI(null);
+            }
+        });
+
+        ImageView facebook = findViewById(R.id.facebook);
+        facebook.setOnClickListener(v -> LoginManager.getInstance().logInWithReadPermissions(this, List.of("email", "public_profile")));
     }
 
     @Override
@@ -127,6 +157,26 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    private void handleFacebookAccessToken(AccessToken token) {
+        Log.d(TAG, "handleFacebookAccessToken:" + token);
+
+        AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
+        mAuth.signInWithCredential(credential).addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                FirebaseUser user = mAuth.getCurrentUser();
+                updateUI(user);
+            } else {
+                updateUI(null);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode, data);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     private void signIn(String email, String password) {
         mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this, task -> {
             if (task.isSuccessful()) {
@@ -138,33 +188,15 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void signOut() {
-        mAuth.signOut();
-
-        ClearCredentialStateRequest clearRequest = new ClearCredentialStateRequest();
-        credentialManager.clearCredentialStateAsync(clearRequest, new CancellationSignal(), Executors.newSingleThreadExecutor(), new CredentialManagerCallback<>() {
-            @Override
-            public void onResult(@NonNull Void result) {
-                Toast.makeText(LoginActivity.this, "Logged out", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onError(@NonNull ClearCredentialException e) {
-                updateUI(null);
-            }
-        });
-    }
-
     private void updateUI(final FirebaseUser user) {
         if (user != null) {
             Intent intent = new Intent(LoginActivity.this, ContactActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
-            finish();
         } else {
             runOnUiThread(() -> {
                 try {
                     Toast.makeText(LoginActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
-                    signOut();
                 } catch (Exception ignored) {
                 }
             });
