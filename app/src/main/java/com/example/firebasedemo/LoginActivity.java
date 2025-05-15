@@ -110,9 +110,7 @@ public class LoginActivity extends AppCompatActivity {
 
         OAuthProvider.Builder provider = OAuthProvider.newBuilder("twitter.com");
 
-        twitter.setOnClickListener(v -> {
-            signInWithTwitter(provider);
-        });
+        twitter.setOnClickListener(v -> signInWithTwitter(provider));
     }
 
     @Override
@@ -206,7 +204,7 @@ public class LoginActivity extends AppCompatActivity {
     private void updateUI(final FirebaseUser user) {
         if (user != null) {
             Intent intent = new Intent(LoginActivity.this, ContactActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } else {
             runOnUiThread(() -> {
