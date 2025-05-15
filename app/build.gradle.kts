@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.firebasedemo"
+    namespace = "com.example.firebasecontactapp"
     compileSdk = 35
 
     defaultConfig {

@@ -1,4 +1,4 @@
-package com.example.firebasedemo;
+package com.example.firebasecontactapp;
 
 import com.google.firebase.database.Exclude;
 

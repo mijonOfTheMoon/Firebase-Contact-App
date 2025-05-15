@@ -1,4 +1,4 @@
-package com.example.firebasedemo;
+package com.example.firebasecontactapp;
 
 import static android.content.ContentValues.TAG;
 import static com.google.android.libraries.identity.googleid.GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL;

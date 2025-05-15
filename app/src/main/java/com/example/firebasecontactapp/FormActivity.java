@@ -1,4 +1,4 @@
-package com.example.firebasedemo;
+package com.example.firebasecontactapp;
 
 import android.os.Bundle;
 import android.widget.Button;

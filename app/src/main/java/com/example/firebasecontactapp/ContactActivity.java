@@ -1,4 +1,4 @@
-package com.example.firebasedemo;
+package com.example.firebasecontactapp;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
