@@ -19,11 +19,6 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
     private final LayoutInflater inflater;
     private final OnContactActionListener listener;
 
-    public interface OnContactActionListener {
-        void onEdit(Contact contact);
-        void onDelete(Contact contact);
-    }
-
     public ContactAdapter(Context ctx, List<Contact> contacts, OnContactActionListener listener) {
         this.contacts = contacts;
         this.inflater = LayoutInflater.from(ctx);
@@ -55,6 +50,12 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
         notifyDataSetChanged();
     }
 
+    public interface OnContactActionListener {
+        void onEdit(Contact contact);
+
+        void onDelete(Contact contact);
+    }
+
     class ContactVH extends RecyclerView.ViewHolder {
         final TextView nameTextView;
         final TextView emailTextView;
@@ -64,25 +65,20 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ContactV
 
         ContactVH(@NonNull View itemView, Context context) {
             super(itemView);
-            nameTextView  = itemView.findViewById(R.id.item_name);
+            nameTextView = itemView.findViewById(R.id.item_name);
             emailTextView = itemView.findViewById(R.id.item_email);
             phoneTextView = itemView.findViewById(R.id.item_phone);
-            editButton    = itemView.findViewById(R.id.editButton);
-            deleteButton  = itemView.findViewById(R.id.deleteButton);
+            editButton = itemView.findViewById(R.id.editButton);
+            deleteButton = itemView.findViewById(R.id.deleteButton);
 
             editButton.setOnClickListener(v -> {
                 int pos = getAdapterPosition();
                 if (pos != RecyclerView.NO_POSITION) listener.onEdit(contacts.get(pos));
             });
-            deleteButton.setOnClickListener(v -> new AlertDialog.Builder(context)
-                    .setTitle("Konfirmasi")
-                    .setMessage("Apakah kamu yakin ingin menghapus kontak ini?")
-                    .setPositiveButton("Ya", (dialog, which) -> {
-                        int pos = getAdapterPosition();
-                        if (pos != RecyclerView.NO_POSITION) listener.onDelete(contacts.get(pos));
-                    })
-                    .setNegativeButton("Tidak", null)
-                    .show());
+            deleteButton.setOnClickListener(v -> new AlertDialog.Builder(context).setTitle("Konfirmasi").setMessage("Apakah kamu yakin ingin menghapus kontak ini?").setPositiveButton("Ya", (dialog, which) -> {
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) listener.onDelete(contacts.get(pos));
+            }).setNegativeButton("Tidak", null).show());
         }
 
         void bind(Contact c) {

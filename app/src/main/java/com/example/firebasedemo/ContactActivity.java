@@ -36,11 +36,11 @@ import java.util.concurrent.Executors;
 
 public class ContactActivity extends AppCompatActivity implements ContactAdapter.OnContactActionListener {
 
+    DatabaseReference databaseReference;
     private FirebaseAuth mAuth;
     private CredentialManager credentialManager;
     private TextView welcome_text;
     private ContactAdapter mAdapter;
-    DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,10 +89,7 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
 
     @Override
     public void onDelete(Contact contact) {
-        databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(String.valueOf(contact.getId())).removeValue()
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Contact deleted", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Toast.makeText(this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
-        refresh();
+        databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(contact.getId()).removeValue().addOnSuccessListener(this, unused -> Toast.makeText(ContactActivity.this, "Contact deleted successfully", Toast.LENGTH_SHORT).show()).addOnFailureListener(this, e -> Toast.makeText(ContactActivity.this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
     }
 
     @SuppressLint("SetTextI18n")
@@ -127,17 +124,14 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
     }
 
     private void updateUI(final boolean state) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if (state) {
-                        Toast.makeText(ContactActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(ContactActivity.this, "Error logging out", Toast.LENGTH_SHORT).show();
-                    }
-                } catch (Exception ignored) {
+        runOnUiThread(() -> {
+            try {
+                if (state) {
+                    Toast.makeText(ContactActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ContactActivity.this, "Error logging out", Toast.LENGTH_SHORT).show();
                 }
+            } catch (Exception ignored) {
             }
         });
     }
@@ -149,7 +143,8 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
                 List<Contact> contacts = new ArrayList<>();
                 for (DataSnapshot snapshot : dataSnapshot.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).getChildren()) {
                     Contact contact = snapshot.getValue(Contact.class);
-                                        if (contact != null) {
+                    if (contact != null) {
+                        contact.setId(snapshot.getKey());
                         contacts.add(contact);
                     }
                 }

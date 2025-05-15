@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:contentDescription="@string/add_new_contact"
+        android:contentDescription="@string/log_out"
         android:src="@android:drawable/ic_menu_upload"
         app:backgroundTint="@color/secolor"
         app:layout_constraintBottom_toBottomOf="parent"

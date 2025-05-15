@@ -6,14 +6,11 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -52,7 +49,7 @@ public class FormActivity extends AppCompatActivity {
         String nama = getIntent().getStringExtra("name");
         String surel = getIntent().getStringExtra("email");
         String nomor = getIntent().getStringExtra("phone");
-        final int contactId = getIntent().getIntExtra("id", 0);
+        String contactId = getIntent().getStringExtra("id");
 
         if (nama != null) nameField.setText(nama);
         if (surel != null) emailField.setText(surel);
@@ -67,32 +64,11 @@ public class FormActivity extends AppCompatActivity {
                 return;
             }
 
-            if (contactId == 0) {
-                Contact contact = new Contact(name, email, phone);
-                databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).push().setValue(contact).addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Toast.makeText(FormActivity.this, "Kontak baru berhasil tersimpan", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(FormActivity.this, "Kontak gagal tersimpan", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            Contact contact = new Contact(name, email, phone);
+            if (contactId == null) {
+                databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).push().setValue(contact).addOnSuccessListener(this, unused -> Toast.makeText(FormActivity.this, "Kontak baru berhasil tersimpan", Toast.LENGTH_SHORT).show()).addOnFailureListener(this, e -> Toast.makeText(FormActivity.this, "Kontak gagal tersimpan", Toast.LENGTH_SHORT).show());
             } else {
-                Contact contact = new Contact(name, email, phone);
-                databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(String.valueOf(contactId)).setValue(contact).addOnSuccessListener(this, new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void unused) {
-                        Toast.makeText(FormActivity.this, "Kontak berhasil diperbarui", Toast.LENGTH_SHORT).show();
-                    }
-                }).addOnFailureListener(this, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(FormActivity.this, "Kontak gagal diperbarui", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(contactId).setValue(contact).addOnSuccessListener(this, unused -> Toast.makeText(FormActivity.this, "Kontak berhasil diperbarui", Toast.LENGTH_SHORT).show()).addOnFailureListener(this, e -> Toast.makeText(FormActivity.this, "Kontak gagal diperbarui", Toast.LENGTH_SHORT).show());
             }
             finish();
         });
