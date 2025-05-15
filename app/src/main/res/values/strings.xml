@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Praktikum Bab 3</string>
-    <string name="tagline">Learn Graphic and UI/UX designing in Hindi\nfor free with live projects.</string>
+    <string name="app_logo">Contact App</string>
+    <string name="tagline">Every connection, perfectly organized.\nYour contact, reimagined.</string>
     <string name="emailhint">Email Address</string>
     <string name="forgot">Forgot Password?</string>
     <string name="orlogin">or login with</string>
