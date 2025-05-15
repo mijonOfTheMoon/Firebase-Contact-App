@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FirebaseDemo">
         <activity
+            android:name=".RegisterActivity"
+            android:exported="false" />
+        <activity
             android:name=".FormActivity"
             android:exported="false" />
         <activity

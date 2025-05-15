@@ -10,6 +10,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -70,6 +71,7 @@ public class LoginActivity extends AppCompatActivity {
         Button login = findViewById(R.id.loginbutton);
         ImageView google = findViewById(R.id.google);
         ImageView twitter = findViewById(R.id.twitter);
+        TextView register = findViewById(R.id.registernow);
 
         mAuth = FirebaseAuth.getInstance();
         credentialManager = CredentialManager.create(getBaseContext());
@@ -111,6 +113,11 @@ public class LoginActivity extends AppCompatActivity {
         OAuthProvider.Builder provider = OAuthProvider.newBuilder("twitter.com");
 
         twitter.setOnClickListener(v -> signInWithTwitter(provider));
+
+        register.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        });
     }
 
     @Override
