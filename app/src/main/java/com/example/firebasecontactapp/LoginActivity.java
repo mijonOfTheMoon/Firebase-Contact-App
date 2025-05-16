@@ -159,10 +159,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithTwitter(OAuthProvider.Builder provider) {
-        mAuth.startActivityForSignInWithProvider(this, provider.build()).addOnSuccessListener(this, authResult -> {
+
+        mAuth.startActivityForSignInWithProvider(this, provider.build()).addOnSuccessListener(authResult -> {
             FirebaseUser user = authResult.getUser();
             updateUI(user);
-        }).addOnFailureListener(this, e -> updateUI(null));
+        }).addOnFailureListener(error -> updateUI(null));
+
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
