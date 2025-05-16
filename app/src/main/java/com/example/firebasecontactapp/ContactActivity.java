@@ -89,7 +89,7 @@ public class ContactActivity extends AppCompatActivity implements ContactAdapter
 
     @Override
     public void onDelete(Contact contact) {
-        databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(contact.getId()).removeValue().addOnSuccessListener(this, unused -> Toast.makeText(ContactActivity.this, "Contact deleted successfully", Toast.LENGTH_SHORT).show()).addOnFailureListener(this, e -> Toast.makeText(ContactActivity.this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
+        databaseReference.child("contacts").child(Objects.requireNonNull(mAuth.getUid())).child(contact.getId()).removeValue().addOnSuccessListener(this, unused -> Toast.makeText(ContactActivity.this, "Kontak berhasil dihapus", Toast.LENGTH_SHORT).show()).addOnFailureListener(this, e -> Toast.makeText(ContactActivity.this, "Failed to delete contact", Toast.LENGTH_SHORT).show());
     }
 
     @SuppressLint("SetTextI18n")
